@@ -10,6 +10,6 @@
    
    <bean class="cn.javass.spring.chapter4.bean.ResourceBean"/>
 
-   <bean class="cn.javass.spring.chapter4.bean.ResourceBean2" autowire="byType"/>
+   <bean class="cn.javass.spring.chapter4.bean.ResourceBean2" autowire="byType" />
     
 </beans>

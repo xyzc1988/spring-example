@@ -3,11 +3,11 @@ package cn.javass.spring.chapter4;
 import java.io.File;
 import java.io.IOException;
 
-import junit.framework.Assert;
 
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.spi.RealFileSystem;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -22,11 +22,16 @@ public class ResourcePatternTest {
         //只加载一个绝对匹配Resource，且通过ResourceLoader.getResource进行加载
         Resource[] resources = resolver.getResources("classpath:META-INF/INDEX.LIST");
         Assert.assertEquals(1, resources.length);
+        System.out.println(resources[0].getURI());
 
         //只加载一个匹配的Resource，且通过ResourceLoader.getResource进行加载
-        resources = resolver.getResources("classpath:META-INF/*.LIST");
+        // If this base package node exists in multiple classloader locations,
+        // the actual end resource may not be underneath. Therefore, preferably,
+        // use "classpath*:" with the same Ant-style pattern in such a case,
+        // which will search all class path locations that contain the root package.
+        resources = resolver.getResources("file:/D:/MyWorkspace/spring-example/target/classes/META-INF/*.txt");
         Assert.assertTrue(resources.length == 1);
-        
+        System.out.println(resources[0].getURI());
 
         //只加载一个绝对匹配Resource，且通过ResourceLoader.getResource进行加载
         resources = resolver.getResources("classpath:META-INF/MANIFEST.MF");
@@ -41,11 +46,11 @@ public class ResourcePatternTest {
         //将加载多个绝对匹配的所有Resource
         //将首先通过ClassLoader.getResources("META-INF")加载非模式路径部分
         //然后进行遍历模式匹配
-        Resource[] resources = resolver.getResources("classpath*:META-INF/INDEX.LIST");
+        Resource[] resources = resolver.getResources("classpath*:META-INF/MANIFEST.MF");
         Assert.assertTrue(resources.length > 1);
         
         //将加载多个模式匹配的Resource
-        resources = resolver.getResources("classpath*:META-INF/*.LIST");
+        resources = resolver.getResources("classpath*:META-INF/*.MF");
         Assert.assertTrue(resources.length > 1);
 
         

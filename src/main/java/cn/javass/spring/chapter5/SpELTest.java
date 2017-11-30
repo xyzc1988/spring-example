@@ -10,10 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.Assert;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

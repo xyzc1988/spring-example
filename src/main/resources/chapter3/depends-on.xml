@@ -15,7 +15,7 @@
         <property name="file" value="D:/test.txt"/>      
     </bean>
 
-    <bean id="dependentBean" 
+    <bean id="dependentBean"
           class="cn.javass.spring.chapter3.bean.DependentBean" 
           init-method="init" destroy-method="destroy" depends-on="resourceBean">
         <property name="resourceBean" ref="resourceBean"/>
