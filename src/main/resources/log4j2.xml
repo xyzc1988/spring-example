@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--日志级别以及优先级排序: OFF > FATAL > ERROR > WARN > INFO > DEBUG > TRACE > ALL -->
+<!--Configuration后面的status，这个用于设置log4j2自身内部的信息输出，可以不设置，当设置成trace时，你会看到log4j2内部各种详细输出-->
+<!--monitorInterval：Log4j能够自动检测修改配置 文件和重新配置本身，设置间隔秒数-->
+<Configuration status="WARN" monitorInterval="3600">
+    <Properties>
+        <Property name="baseDir">/usr/java/logs</Property>
+    </Properties>
+    <!--先定义所有的appender-->
+    <Appenders>
+        <!--输出控制台的配置-->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--
+            输出日志的格式
+            %d{参数}               : 日期,如%d{dd MMM yyyy HH:mm:ss,SSS}
+            %p或%-5level           : 日志级别
+            %c{36}或%logger{参数}  : logger名称
+            %C{1}或%class{参数}    : 类名,效果与%c{参数}相同
+            %M或%method            : 方法名
+            %L                     : 行号
+            %l                     : 输出完整包路径,使用该参数会影响日志输出的性能
+            %m或%msg               : 日志内容
+            %n                     : 换行符
+            PatternLayout中包含的特殊字符包括\t,\n,\r,\f，用\\输出单斜线，用%%输出%。
+            对齐修饰，在任何pattern和%之间加入带符号数字指定对齐样式。
+            如:%10.20c表示对logger的信息进行处理;%-10.20m表示对message进行处理。
+            整数表示右对齐，负数表示左对齐；整数位表示输出信息的最小10个字符，如果输出信息不够10个字符，将用空格补齐；
+            小数位表示输出信息的最大字符数，如果超过20个字符，则只保留最后20个字符的信息。
+            -->
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%p] (%C{1}\:%L) - %m%n"/>
+            <!-- <ThresholdFilter level="INFO" onMatch="DENY" onMismatch="ACCEPT"/>-->
+        </Console>
+        <!--文件会打印出所有信息，这个log每次运行程序会自动清空，由append属性决定，这个也挺有用的，适合临时测试用-->
+        <File name="RuntimeLog" fileName="${sys:user.home}/logs/test.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%p] (%C{1}\:%L) - %m%n"/>
+        </File>
+
+        <!-- 这个会打印出所有的info及以下级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+        <RollingFile name="RollingFileInfo" fileName="${baseDir}/info.log"
+                     filePattern="${baseDir}/$${date:yyyy-MM}/info-%d{yyyy-MM-dd}-%i.info.gz">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%p] (%C{1}\:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <!-- DefaultRolloverStrategy默认同一文件夹下存放7个文件,滚动覆盖 -->
+            <!--
+            <DefaultRolloverStrategy max="10">
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/info-*.log.gz"/>
+                    <IfLastModified age="60d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+            <DirectWriteRolloverStrategy maxFiles="10"/>
+            -->
+        </RollingFile>
+        <RollingFile name="RollingFileError" fileName="${baseDir}/error.log"
+                     filePattern="${baseDir}/$${date:yyyy-MM}/info-%d{yyyy-MM-dd}-%i.error.gz">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+            </Filters>
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%p] (%C{1}\:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件，这里设置了20 -->
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+    </Appenders>
+    <!--然后定义logger，只有定义了logger并引入的appender，appender才会生效-->
+    <Loggers>
+        <!--过滤掉spring和mybatis的一些无用的DEBUG信息-->
+        <Logger name="org.springframework" level="INFO"/>
+        <Logger name="org.mybatis" level="INFO"/>
+        <Logger name="org.elasticsearch" level="INFO"/>
+        <!-- mybatis打印日志,配置mapper接口包路径,DEBUG打印SQL,TRACE打印结果集 -->
+        <Logger name="io.github.xyzc1988.mapper" level="DEBUG" additivity="false">
+            <Appender-ref ref="Console"/>
+        </Logger>
+        <!-- 根logger的设置-->
+        <Root level="INFO">
+            <Appender-ref ref="Console"/>
+            <Appender-ref ref="RollingFileInfo"/>
+            <!--<Appender-ref ref="RollingFileError"/>-->
+        </Root>
+    </Loggers>
+
+</Configuration>
